@@ -23,7 +23,7 @@ public class RMIClient {
         }
     }
 
-    // Requisito 7: Solicita criação de fila ao entrar
+    // Solicita criação de fila ao entrar
     public void registrarUsuario(String nomeUsuario) {
         try {
             if (chatService != null) {
@@ -34,12 +34,10 @@ public class RMIClient {
         }
     }
 
-    // Requisito 6 e 10: Envia mensagem para o servidor offline (ActiveMQ)
+    // Envia mensagem para o servidor offline (ActiveMQ)
     public void enviarMensagemOffline(Mensagem msg) {
         try {
             if (chatService != null) {
-                // Adaptamos para passar os dados da classe Mensagem
-                // Se alterou a Interface para aceitar (String, String, String), use:
                 chatService.enviarMensagemOffline(msg.getRemetente(), msg.getDestinatario(), msg.getConteudo());
                 System.out.println("Mensagem enviada para o servidor offline.");
             }
@@ -48,7 +46,7 @@ public class RMIClient {
         }
     }
 
-    // Requisito 9: Recupera mensagens quando volta a ficar Online
+    // Recupera mensagens quando volta a ficar Online
     public List<String> buscarMensagensPendentes(String nomeUsuario) {
         try {
             if (chatService != null) {

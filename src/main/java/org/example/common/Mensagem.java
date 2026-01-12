@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Mensagem implements Serializable {
-    // Serial Version UID garante compatibilidade na serialização entre versões diferentes
     private static final long serialVersionUID = 1L;
 
     private String remetente;
@@ -13,12 +12,10 @@ public class Mensagem implements Serializable {
     private String conteudo;
     private LocalDateTime dataHora;
 
-    // Construtor padrão
     public Mensagem() {
         this.dataHora = LocalDateTime.now();
     }
 
-    // Construtor com campos principais
     public Mensagem(String remetente, String destinatario, String conteudo) {
         this.remetente = remetente;
         this.destinatario = destinatario;
@@ -59,7 +56,7 @@ public class Mensagem implements Serializable {
         this.dataHora = dataHora;
     }
 
-    // Método utilitário para formatar a hora na interface (ex: "14:30")
+    // Utilizado para formatar a hora na interface
     public String getHoraFormatada() {
         if (dataHora == null) return "";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");

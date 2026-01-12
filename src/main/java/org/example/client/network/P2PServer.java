@@ -26,7 +26,6 @@ public class P2PServer extends Thread {
                 serverSocket.close();
             }
         } catch (Exception e) {
-            // Ignora erro no fechamento
         }
     }
 
@@ -49,7 +48,7 @@ public class P2PServer extends Thread {
                         Mensagem msg = (Mensagem) objetoRecebido;
                         System.out.println("P2P Recebido: " + msg.getConteudo());
 
-                        // Requisito 3: Mensagem entregue instantaneamente
+                        // Mensagem entregue instantaneamente
                         // Avisa a interface gráfica para exibir a mensagem
                         if (listener != null) {
                             listener.onMessageReceived(msg);

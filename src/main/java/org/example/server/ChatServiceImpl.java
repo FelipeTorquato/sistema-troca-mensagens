@@ -12,44 +12,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatServiceImpl extends UnicastRemoteObject implements IChatService {
-    // URL padrão do ActiveMQ (verifique se o seu está nesta porta)
+    // URL padrão do ActiveMQ
     private static final String URL_BROKER = ActiveMQConnection.DEFAULT_BROKER_URL;
-    private final ConnectionFactory connectionFactory;
+    private Session session;
+    private Connection connection;
 
     protected ChatServiceImpl() throws RemoteException {
         super();
         try {
             ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(URL_BROKER);
             factory.setTrustAllPackages(true);
-            // Inicializa a conexão com o Middleware Orientado a Mensagens
-            this.connectionFactory = factory;
+            this.connection = factory.createConnection();
+            this.connection.start();
+            this.session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RemoteException("Erro ao conectar no ActiveMQ: " + e.getMessage());
+            throw new RemoteException("Erro ao iniciar ActiveMQ: " + e.getMessage());
         }
     }
 
     @Override
     public void criarFilaUsuario(String nomeUsuario) throws RemoteException {
-        // No ActiveMQ, criar uma fila é implícito ao tentar acessá-la,
-        // mas podemos forçar uma conexão para garantir que está tudo OK.
+        // A fila é criada de maneira implícita. Aqui é gerado um log para registro no servidor, mas o JMS cria a fila on-demand
         System.out.println("Servidor: Registrando/Criando fila para o usuário " + nomeUsuario + " ");
-        // Lógica de "Dummy send" ou apenas log, pois o JMS cria on-demand.
     }
 
     @Override
     public void enviarMensagemOffline(String remetente, String destinatario, String mensagem) throws RemoteException {
-        Connection connection = null;
         try {
-            connection = connectionFactory.createConnection();
-            connection.start();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-            // A fila terá o nome do destinatário (Requisito 5 e 6 [cite: 11, 13])
+            // A fila terá o nome do destinatário
             Destination destination = session.createQueue(destinatario);
             MessageProducer producer = session.createProducer(destination);
-
             ObjectMessage message = session.createObjectMessage();
+
             // Formatamos a mensagem para saber quem mandou
             message.setObject(new Mensagem(remetente, destinatario, mensagem));
 
@@ -58,27 +53,19 @@ public class ChatServiceImpl extends UnicastRemoteObject implements IChatService
 
         } catch (JMSException e) {
             throw new RemoteException("Erro JMS ao enviar: " + e.getMessage());
-        } finally {
-            fecharConexao(connection);
         }
     }
 
     @Override
     public List<String> recuperarMensagensPendentes(String nomeUsuario) throws RemoteException {
-//        List<String> mensagens = new ArrayList<>();
         List<String> mensagensFormatadas = new ArrayList<>();
-        Connection connection = null;
+        MessageConsumer consumer = null;
         try {
-            connection = connectionFactory.createConnection();
-            connection.start();
-//            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-
             // Acessa a fila do próprio usuário para ler o que tem lá
             Destination destination = session.createQueue(nomeUsuario);
-            MessageConsumer consumer = session.createConsumer(destination);
+            consumer = session.createConsumer(destination);
 
-            System.out.println("DEBUG: Buscando mensagens para " + nomeUsuario);
+//            System.out.println("DEBUG: Buscando mensagens para " + nomeUsuario);
 
 //            // Loop para pegar todas as mensagens pendentes
 //            while (true) {
@@ -94,12 +81,17 @@ public class ChatServiceImpl extends UnicastRemoteObject implements IChatService
 //            System.out.println(nomeUsuario + " recuperou " + mensagens.size() + " mensagens offline.");
 
             while (true) {
-                Message message = consumer.receive(500);
+                Message message = consumer.receive(1000);
+
+                if (message == null) {
+                    break; // Acabaram as mensagens
+                }
+
                 if (message != null) {
                     try {
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMsg = (ObjectMessage) message;
-                            Object objeto = objMsg.getObject(); // <--- O erro costuma dar AQUI
+                            Object objeto = objMsg.getObject();
 
                             if (objeto instanceof Mensagem) {
                                 Mensagem m = (Mensagem) objeto;
@@ -123,7 +115,11 @@ public class ChatServiceImpl extends UnicastRemoteObject implements IChatService
         } catch (JMSException e) {
             throw new RemoteException("Erro JMS ao receber: " + e.getMessage());
         } finally {
-            fecharConexao(connection);
+            try {
+                if (consumer != null) consumer.close();
+            } catch (JMSException e) {
+
+            }
         }
         return mensagensFormatadas;
     }
@@ -131,6 +127,8 @@ public class ChatServiceImpl extends UnicastRemoteObject implements IChatService
     private void fecharConexao(Connection con) {
         try {
             if (con != null) con.close();
-        } catch (JMSException e) { /* Ignora */ }
+        } catch (JMSException e) {
+
+        }
     }
 }

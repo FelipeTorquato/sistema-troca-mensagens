@@ -54,16 +54,16 @@ public class ServerMain extends JFrame {
     }
 
     private void acaoIniciarServidor() {
-        // Desativa o botão imediatamente para evitar múltiplos cliques
+        // Desativa o botão
         btnIniciar.setEnabled(false);
         btnIniciar.setText("Servidor Iniciando...");
 
-        // Roda a inicialização em uma Thread separada para não travar a GUI
+        // Roda a inicialização em uma Thread separada
         new Thread(() -> {
             try {
                 System.out.println("--- Iniciando Configuração do Servidor ---");
 
-                // 1. Inicia o registro RMI na porta 1099
+                // Inicia o registro RMI na porta 1099
                 try {
                     LocateRegistry.createRegistry(1099);
                     System.out.println("[OK] RMI Registry iniciado na porta 1099.");
@@ -71,11 +71,11 @@ public class ServerMain extends JFrame {
                     System.out.println("[INFO] RMI Registry já parece estar rodando: " + e.getMessage());
                 }
 
-                // 2. Instancia o objeto remoto (Conecta ao ActiveMQ internamente)
+                // Instancia o objeto remoto (Conecta ao ActiveMQ internamente)
                 System.out.println("Conectando ao ActiveMQ e criando serviços...");
                 IChatService chatService = new ChatServiceImpl();
 
-                // 3. Disponibiliza o serviço com o nome "ChatServidor"
+                // Disponibiliza o serviço com o nome ChatServidor
                 Naming.rebind("rmi://localhost:1099/ChatServidor", chatService);
 
                 System.out.println("[SUCESSO] Servidor RMI registrado como 'ChatServidor'.");
@@ -97,9 +97,8 @@ public class ServerMain extends JFrame {
         }).start();
     }
 
-    /**
-     * Redireciona System.out e System.err para o JTextArea da interface.
-     */
+
+    // Redireciona System.out e System.err para o JTextArea da interface
     private void redirecionarLogs() {
         OutputStream out = new OutputStream() {
             @Override
@@ -113,7 +112,6 @@ public class ServerMain extends JFrame {
             }
 
             private void atualizarTexto(String texto) {
-                // Atualizações de Swing devem ser feitas na Event Dispatch Thread
                 SwingUtilities.invokeLater(() -> areaLog.append(texto));
             }
         };
@@ -123,7 +121,6 @@ public class ServerMain extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Inicia a interface gráfica
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

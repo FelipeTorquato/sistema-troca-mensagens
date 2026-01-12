@@ -60,7 +60,7 @@ public class ChatWindow extends JFrame implements MessageListener {
     private void inicializarRede() {
         this.p2pClient = new P2PClient();
 
-        // Conecta ao RMI e Garante que a fila existe (Requisito 7)
+        // Conecta ao RMI e Garante que a fila existe
         this.rmiClient = new RMIClient();
         this.rmiClient.registrarUsuario(this.nomeUsuario);
     }
@@ -71,7 +71,7 @@ public class ChatWindow extends JFrame implements MessageListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // --- Painel Esquerdo: Lista de Amigos (Requisito 1: Visível o tempo todo) ---
+        // --- Painel Esquerdo: Lista de Amigos ---
         JPanel panelEsquerdo = new JPanel(new BorderLayout());
         panelEsquerdo.setBorder(BorderFactory.createTitledBorder("Amigos"));
         panelEsquerdo.setPreferredSize(new Dimension(200, 0));
@@ -115,13 +115,13 @@ public class ChatWindow extends JFrame implements MessageListener {
 
         // --- Eventos ---
 
-        // Botão Online/Offline (Requisito 2)
+        // Botão Online/Offline
         btnToggleOnline.addActionListener(e -> alternarStatus());
 
-        // Adicionar Amigo (Requisito 8)
+        // Adicionar Amigo
         btnAdd.addActionListener(e -> adicionarContato());
 
-        // Remover Amigo (Requisito 8)
+        // Remover Amigo
         btnRem.addActionListener(e -> {
             Contato selecionado = listaContatos.getSelectedValue();
             if (selecionado != null) modeloListaContatos.removeElement(selecionado);
@@ -144,7 +144,7 @@ public class ChatWindow extends JFrame implements MessageListener {
             p2pServer = new P2PServer(minhaPortaP2P, this);
             p2pServer.start();
 
-            // Busca mensagens pendentes no Servidor Offline (Requisito 4)
+            // Busca mensagens pendentes no Servidor Offline
             buscarMensagensOffline();
 
         } else {
@@ -217,10 +217,10 @@ public class ChatWindow extends JFrame implements MessageListener {
 
         Mensagem msg = new Mensagem(this.nomeUsuario, destinatario.getNome(), texto);
 
-        // Lógica de Envio (Requisito 3, 6 e 13)
+        // Lógica de Envio
         boolean enviadoP2P = false;
 
-        // Só tenta P2P se eu achar que ele pode estar online (ou tento sempre e uso o catch como fallback)
+        // Só tenta P2P se eu achar que ele pode estar online
         enviadoP2P = p2pClient.enviarMensagemDireta(destinatario.getIp(), destinatario.getPorta(), msg);
 
         if (enviadoP2P) {
@@ -234,7 +234,7 @@ public class ChatWindow extends JFrame implements MessageListener {
         campoMensagem.setText("");
     }
 
-    // Callback recebido do P2PServer (Requisito 3)
+    // Callback recebido do P2PServer
     @Override
     public void onMessageReceived(Mensagem msg) {
         SwingUtilities.invokeLater(() -> {

@@ -25,7 +25,7 @@ public class Contato {
 
     @Override
     public String toString() {
-        // Isso é o que aparecerá na JList
+        // O que aparece na JList
         return nome + " (" + ip + ":" + porta + ")";
     }
 }
